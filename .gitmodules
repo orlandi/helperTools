@@ -1,0 +1,3 @@
+[submodule "external/export_fig"]
+	path = external/export_fig
+	url = https://github.com/orlandi/export_fig
