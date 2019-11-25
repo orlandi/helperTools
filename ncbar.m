@@ -246,6 +246,32 @@ classdef ncbar < handle
       obj.update(0, idx);
     end
     
+    % Change current bar name and also clean it
+    %----------------------------------------------------------------------
+    function obj = setCurrentBarNameClean(msg)
+      obj = ncbar.getInstance();
+      obj.defaultTitleStr = '%s (%s elapsed)';
+      if(isempty(obj.currentBar))
+        obj.currentBar = 1;
+      end
+      obj.barName{obj.currentBar} = msg;
+      obj.update('force');
+      obj.setCleanActiveBar();
+    end
+    % Will set a bar to 0, with a new msg and timers to 0
+    %----------------------------------------------------------------------
+    function obj = restartBar(idx, msg)
+      obj = ncbar.getInstance();
+      obj.setCurrentBar(idx);
+      obj.defaultTitleStr = '%s (%s elapsed)';
+      if(isempty(obj.currentBar))
+        obj.currentBar = 1;
+      end
+      obj.barName{obj.currentBar} = msg;
+      obj.update('force');
+      obj.setCleanActiveBar();
+    end
+    
     % Change current bar name
     %----------------------------------------------------------------------
     function obj = setCurrentBarName(msg)
@@ -907,9 +933,11 @@ error(javachk('swing',mfilename)) % Swing components must be available.
 % Flush the Event Queue of Graphic Objects and Update the Figure Window.
 drawnow expose
 
-warnStruct=warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warnStruct = warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warnStruct2 = warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
 jFrame = get(handle(figureHandle),'JavaFrame');
 warning(warnStruct.state,'MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warning(warnStruct2.state,'MATLAB:ui:javaframe:PropertyToBeRemoved');
 
 drawnow
 
