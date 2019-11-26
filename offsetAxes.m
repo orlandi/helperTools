@@ -1,4 +1,4 @@
-function offsetAxes(ax, varargin)
+function ax = offsetAxes(ax, varargin)
 % thanks to Pierre Morel, undocumented Matlab
 % and https://stackoverflow.com/questions/38255048/separating-axes-from-plot-area-in-matlab
 %
@@ -8,7 +8,8 @@ function offsetAxes(ax, varargin)
 if(~exist('ax', 'var'))
   ax = gca;
 end
-
+ax.XAxis.Color = 'k';
+ax.YAxis.Color = 'k';
 set(ax, 'TickDir', 'out');
 box(ax, 'off');
 set(ax.Parent,'Color','w');
@@ -23,6 +24,9 @@ end
   YT = ax.YTick;
   ax.XTickMode = 'manual';
   ax.YTickMode = 'manual';
+
+  
+
   ax.XLim(1) = ax.XLim(1)-(ax.XLim(2)-ax.XLim(1))/factor;
   ax.YLim(1) = ax.YLim(1)-(ax.YLim(2)-ax.YLim(1))/factor;
   %ax.XLim(1) = ax.XLim(1)-(ax.XTick(2)-ax.XTick(1))/factor;
