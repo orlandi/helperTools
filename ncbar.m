@@ -13,7 +13,7 @@ classdef ncbar < handle
 % Modification of the progressbar by Steve Hoelzer
 % https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar
 %
-%   Copyright (C) 2016-2018, Javier G. Orlandi <javiergorlandi@gmail.com>
+%   Copyright (C) 2016-2020, Javier G. Orlandi <javierorlandi@javierorlandi.com>
 %
 
   % List of variles
@@ -683,7 +683,6 @@ function TimerCircularScroll(hObject, ~)
     %delete(timerfind('TimerFcn', @TimerCircularScroll));
     %wait(1);
   end
-<<<<<<< Updated upstream
 end
 
 function pos = setFigurePosition(parent, varargin)
@@ -1030,6 +1029,4 @@ function tf = ishg2(figureHandle)
 
 tf = isa(figureHandle,'matlab.ui.Figure');
 
-=======
->>>>>>> Stashed changes
 end
