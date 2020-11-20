@@ -19,13 +19,11 @@ function pos = setFigurePosition(parent, varargin)
 %   pos = setFigurePosition(parent, 'width', 300, 'height', 200)
 %
 % Copyright (C) 2016-2018, Javier G. Orlandi <javiergorlandi@gmail.com>
- 
+
 params.width = 500;
 params.height = 500;
 params.centered = false;
-params.visible = true;
 params.useMultipleMonitors = false;
-params.createFigure = false;
 % Parse them
 params = parse_pv_pairs(params, varargin);
 if(ismac)
@@ -81,7 +79,7 @@ else
     monMaxY = max(monPos(:,2)+monPos(:,4)-1);
   end
 end
- 
+
 if(~isempty(parent) && ~params.centered)
   % Try to put the new figure to the right of the parent
   pos = [parent.Position(1)+parent.Position(3)+5, parent.Position(2), params.width, params.height];
@@ -123,10 +121,4 @@ else
     % If it still doesn't fit, you are pretty much screwed
     pos = [monPos(1,1)+round((monPos(1,3)-params.width)/2), monPos(1, 2)+round((monPos(1,4)-params.height)/2), params.width, params.height];
   end
-end
-if(params.createFigure)
-  hFig = figure('Visible', params.visible);
-  hFig.Color = 'w';
-  hFig.Position = pos;
-  pos = hFig;
 end

@@ -117,5 +117,3 @@ if(params.maximized)
 end
 % Do not. Better stick to the default wich is pixels
 %hFig.Units = params.units; % Convert to appropiate units
-
-

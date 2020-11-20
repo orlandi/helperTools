@@ -13,7 +13,7 @@ classdef ncbar < handle
 % Modification of the progressbar by Steve Hoelzer
 % https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar
 %
-%   Copyright (C) 2016-2018, Javier G. Orlandi <javiergorlandi@gmail.com>
+%   Copyright (C) 2016-2020, Javier G. Orlandi <javierorlandi@javierorlandi.com>
 %
 
   % List of variles
@@ -66,13 +66,28 @@ classdef ncbar < handle
     %----------------------------------------------------------------------
     function obj = initialize(varargin)
       obj = ncbar.getInstance();
-      runningTimers = timerfind('TimerFcn', @TimerCircularScroll);
-      if(~isempty(runningTimers))
+%       runningTimers = timerfind('TimerFcn', @TimerCircularScroll);
+%       if(~isempty(runningTimers))
+%         try
+%           stop(runningTimers);
+%           delete(runningTimers);
+%         catch
+%         end
+%       end
+      prevTimers = timerfind();
+      timerCnt = 0;
+      for it0 = 1:length(prevTimers)
         try
-          stop(runningTimers);
-          delete(runningTimers);
+          if(contains(func2str(prevTimers(it0).TimerFcn),'TimerCircularScroll'))
+            stop(prevTimers(it0));
+            delete(prevTimers(it0));
+            timerCnt = timerCnt+1;
+          end
         catch
         end
+      end
+      if(timerCnt > 0)
+        fprintf('Deleted %d ghost timers\n', timerCnt);
       end
       obj.close();
       obj = ncbar.getInstance();
@@ -91,7 +106,7 @@ classdef ncbar < handle
       obj.initializeFigure();
       obj.timerObj = timer('TimerFcn', @TimerCircularScroll, ...
                        'BusyMode', 'drop', 'ExecutionMode','FixedRate',...
-                       'Period', 1);
+                       'Tag', 'ncbar', 'Period', 1);
       start(obj.timerObj);% Start timer.
     end
     
@@ -99,13 +114,28 @@ classdef ncbar < handle
     %----------------------------------------------------------------------
     function obj = automatic(varargin)
       obj = ncbar.getInstance();
-      runningTimers = timerfind('TimerFcn', @TimerCircularScroll);
-      if(~isempty(runningTimers))
+%       runningTimers = timerfind('TimerFcn', @TimerCircularScroll);
+%       if(~isempty(runningTimers))
+%         try
+%           stop(runningTimers);
+%           delete(runningTimers);
+%         catch
+%         end
+%       end
+      prevTimers = timerfind();
+      timerCnt = 0;
+      for it0 = 1:length(prevTimers)
         try
-          stop(runningTimers);
-          delete(runningTimers);
+          if(contains(func2str(prevTimers(it0).TimerFcn),'TimerCircularScroll'))
+            stop(prevTimers(it0));
+            delete(prevTimers(it0));
+            timerCnt = timerCnt+1;
+          end
         catch
         end
+      end
+      if(timerCnt > 0)
+        fprintf('Deleted %d ghost timers\n', timerCnt);
       end
       obj.close();
       obj = ncbar.getInstance();
@@ -129,7 +159,7 @@ classdef ncbar < handle
       obj.initializeFigure();
       obj.timerObj = timer('TimerFcn', @TimerCircularScroll, ...
                        'BusyMode', 'drop', 'ExecutionMode','FixedRate',...
-                       'Period', 1);
+                       'Tag', 'ncbar', 'Period', 1);
       start(obj.timerObj);% Start timer.
       %obj.defaultTitleStr = '%s';
       obj.defaultTitleStr = '%s (%s elapsed)';
@@ -157,7 +187,9 @@ classdef ncbar < handle
         'Name', obj.title, ...
         'MenuBar', 'none');
       figure(obj.figHandle);
+      warning('off', 'MATLAB:ui:javaframe:PropertyToBeRemoved');
       WinOnTop(obj.figHandle);
+      warning('on', 'MATLAB:ui:javaframe:PropertyToBeRemoved');
       % Initialize axes, patch, and text for each bar
       left = obj.hpad;
 
@@ -176,20 +208,29 @@ classdef ncbar < handle
         textMsg = sprintf(textMsgHtml, obj.barName{ndx}, '');
         if(ismac || isunix)
           fileSrc = 'file://';
+        elseif(obj.imgPath(1) == '\') % For samba shares?
+          fileSrc = 'file:';
         else
           fileSrc = 'file:/';
         end
-          gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
-                '<td rowspan=2>'...
-                '<img src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
-                '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
-              
+          
+           %gif = ['<html><img src="' fileSrc obj.imgPath, filesep, fileName '"/></body></html>'];
 
         gifSize  = [778, 33];
         borderSize = 0;
         backColor = [1 1 1];
         cd = ones(gifSize(2),gifSize(1),3);
-
+        if(~verLessThan('MATLAB','9.6'))
+          gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
+                 '<td rowspan=2>'...
+                 '<img width= ' num2str(gifSize(1)) ' height= ' num2str(gifSize(2)) ' src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
+                 '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
+        else
+          gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
+                 '<td rowspan=2>'...
+                 '<img src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
+                 '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
+        end
         for i = 1:3
           if(obj.automaticBar(ndx))
             cd(:, :, i) = backColor(i);
@@ -203,7 +244,10 @@ classdef ncbar < handle
         cd(1:end, 1, :) = 0;
         cd(1:end, end, :) = 0;
         
-        obj.progData(ndx).control = uicontrol(obj.figHandle, 'style','push', 'pos',[left+1 bottom+1 gifSize(1)+borderSize gifSize(2)+borderSize], 'String' ,gif, 'enable', 'inactive', 'CData', cd);
+        obj.progData(ndx).control = uicontrol(obj.figHandle, 'style','push', ...
+          'pos',[left+1 bottom+1 gifSize(1)+borderSize gifSize(2)+borderSize], 'String' ,gif, ...
+          'enable', 'inactive', 'CData', cd);
+
         obj.progData(ndx).currentFraction = 0;
         % Set starting time reference
         obj.barStartTime{ndx} = clock;
@@ -220,7 +264,7 @@ classdef ncbar < handle
       % Check that the handle exists
       if(~ishandle(obj.figHandle))
         ME = MException('NCBAR:closed', ...
-                        'Aborted. Progress bar manually closed');
+                        'Aborted. Progress bar manually closed.');
         throwAsCaller(ME);
       end
     end
@@ -244,6 +288,32 @@ classdef ncbar < handle
       obj.defaultTitleStr = '%s (%s elapsed)';
       obj.automaticBar(idx) = true;
       obj.update(0, idx);
+    end
+    
+    % Change current bar name and also clean it
+    %----------------------------------------------------------------------
+    function obj = setCurrentBarNameClean(msg)
+      obj = ncbar.getInstance();
+      obj.defaultTitleStr = '%s (%s elapsed)';
+      if(isempty(obj.currentBar))
+        obj.currentBar = 1;
+      end
+      obj.barName{obj.currentBar} = msg;
+      obj.update('force');
+      obj.setCleanActiveBar();
+    end
+    % Will set a bar to 0, with a new msg and timers to 0
+    %----------------------------------------------------------------------
+    function obj = restartBar(idx, msg)
+      obj = ncbar.getInstance();
+      obj.setCurrentBar(idx);
+      obj.defaultTitleStr = '%s (%s elapsed)';
+      if(isempty(obj.currentBar))
+        obj.currentBar = 1;
+      end
+      obj.barName{obj.currentBar} = msg;
+      obj.update('force');
+      obj.setCleanActiveBar();
     end
     
     % Change current bar name
@@ -418,12 +488,23 @@ classdef ncbar < handle
       else
         fileSrc = 'file:/';
       end
-       gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
-              '<td rowspan=2>'...
-              '<img src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
-              '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
-
       gifSize  = [778, 33];
+%        gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
+%               '<td rowspan=2>'...
+%               '<img src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
+%               '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
+      if(~verLessThan('MATLAB','9.6'))
+        gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
+                 '<td rowspan=2>'...
+                 '<img width= ' num2str(gifSize(1)) ' height= ' num2str(gifSize(2)) ' src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
+                 '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
+      else
+        gif = ['<html><table border=0 cellspacing=0 cellpadding=0><tr><td></td>'...
+                 '<td rowspan=2>'...
+                 '<img src="' fileSrc obj.imgPath, filesep, fileName '"/></td></tr>'...
+                 '<tr><td colspan=2>' textMsg '</td></tr></table></body></html>'];
+      end
+      
       backColor = [1 1 1];
       cd = ones(gifSize(2),gifSize(1),3);
       cdmap = obj.baseCmap;
@@ -907,11 +988,11 @@ error(javachk('swing',mfilename)) % Swing components must be available.
 % Flush the Event Queue of Graphic Objects and Update the Figure Window.
 drawnow expose
 
-warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
-warnStruct=warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
+warnStruct = warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warnStruct2 = warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
 jFrame = get(handle(figureHandle),'JavaFrame');
 warning(warnStruct.state,'MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
-warning(warnStruct.state,'MATLAB:ui:javaframe:PropertyToBeRemoved');
+warning(warnStruct2.state,'MATLAB:ui:javaframe:PropertyToBeRemoved');
 
 drawnow
 
