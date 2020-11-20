@@ -5,7 +5,7 @@ else
   h = varargin{1};
 end
 if(nargin < 3)
-  renderer = 'painters';
+  renderer = '-painters';
 else
   renderer = varargin{2};
 end

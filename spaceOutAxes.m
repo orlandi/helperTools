@@ -21,8 +21,17 @@ function [xRange, yRange] = spaceOutAxes(varargin)
   else
     ax = varargin{1};
   end
-  xRange = xlim(ax);
-  xlim(ax, xRange+[-1 1]*diff(xRange)*0.025);
-  yRange = ylim(ax);
-  ylim(ax, yRange+[-1 1]*diff(yRange)*0.025);
+  if(length(ax) == 1)
+    xRange = xlim(ax);
+    xlim(ax, xRange+[-1 1]*diff(xRange)*0.025);
+    yRange = ylim(ax);
+    ylim(ax, yRange+[-1 1]*diff(yRange)*0.025);
+  else
+    xRange = xlim(ax(1));
+    xlim(ax(1), xRange+[-1 1]*diff(xRange)*0.025);
+    for it1 = 1:length(ax)
+      yRange = ylim(ax(it1));
+      ylim(ax(it1), yRange+[-1 1]*diff(yRange)*0.025);
+    end
+  end
 end

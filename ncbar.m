@@ -907,9 +907,11 @@ error(javachk('swing',mfilename)) % Swing components must be available.
 % Flush the Event Queue of Graphic Objects and Update the Figure Window.
 drawnow expose
 
-warnStruct=warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warnStruct=warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
 jFrame = get(handle(figureHandle),'JavaFrame');
 warning(warnStruct.state,'MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+warning(warnStruct.state,'MATLAB:ui:javaframe:PropertyToBeRemoved');
 
 drawnow
 
