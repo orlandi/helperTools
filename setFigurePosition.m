@@ -44,14 +44,37 @@ else
     % If no parent, get current matlab monitor
     desktop = com.mathworks.mde.desk.MLDesktop.getInstance;
     desktopMainFrame = desktop.getMainFrame;
-    % That +9 is so weird....
-    mainX = desktopMainFrame.getLocation.x+9;
-    mainY = desktopMainFrame.getLocation.y+9;
-    if(mainX < 1)
-      mainX = 1;
-    end
-    if(mainY < 1)
-      mainY = 1;
+    % If frame is empty, use first monitor (headless setup?)
+    if(isempty(desktopMainFrame))
+      currentMonitor = 1;
+      if(size(monPos, 1) > 1)
+        % If there's more than one monitor, check in which one we are
+        for it = 1:(size(monPos, 1))
+          if(mainX >= monPos(it, 1) && mainX < (monPos(it, 1)+monPos(it,3)) && mainY >= monPos(it, 2) && mainY < (monPos(it, 2)+monPos(it,4)))
+            currentMonitor = it;
+            break;
+          end
+        end
+        monMinX = monPos(currentMonitor,1);
+        monMaxX = monPos(currentMonitor,1)+monPos(currentMonitor,3)-1;
+        monMinY = monPos(currentMonitor,2);
+        monMaxY = monPos(currentMonitor,2)+monPos(currentMonitor,4)-1;
+      else
+        monMinX = min(monPos(:,1));
+        monMaxX = max(monPos(:,1)+monPos(:,3)-1);
+        monMinY = min(monPos(:,2));
+        monMaxY = max(monPos(:,2)+monPos(:,4)-1);
+      end
+    else
+      % That +9 is so weird....
+      mainX = desktopMainFrame.getLocation.x+9;
+      mainY = desktopMainFrame.getLocation.y+9;
+      if(mainX < 1)
+        mainX = 1;
+      end
+      if(mainY < 1)
+        mainY = 1;
+      end
     end
   else
     % If parent, get parent monitor
